@@ -1,0 +1,48 @@
+name: C++ CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test_default:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      
+      - name: Install Dependencies
+        run: sudo apt install -y gcc make
+      
+      - name: Build and Run
+        run: |
+          cd examples
+          make
+          cd build
+          RETURN_CODE=$(./main)
+          if [ $RETURN_CODE -eq -1 ]; then
+            exit 0 
+          else
+            exit 1
+          fi
+
+  test_extern:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Install Dependencies
+        run: sudo apt install -y gcc make
+
+      - name: Build and Run
+        run: |
+          cd examples
+          make
+          make external_module
+          cd build
+          ./main
