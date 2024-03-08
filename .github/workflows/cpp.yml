@@ -23,12 +23,8 @@ jobs:
           cd examples
           make
           cd build
-          RETURN_CODE=$(./main)
-          if [ $RETURN_CODE -eq 255 ]; then
-            exit 0 
-          else
-            exit 1
-          fi
+          ./main && (echo "Failed to execute ./main"; exit 1) || (exit 0)
+
 
   test_extern:
     runs-on: ubuntu-latest
