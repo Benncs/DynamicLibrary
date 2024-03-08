@@ -24,7 +24,7 @@ jobs:
           make
           cd build
           RETURN_CODE=$(./main)
-          if [ $RETURN_CODE -eq -1 ]; then
+          if [ $RETURN_CODE -eq 255 ]; then
             exit 0 
           else
             exit 1
