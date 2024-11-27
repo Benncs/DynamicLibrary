@@ -33,7 +33,7 @@ public:
    * @param fname The name of the item.
    * @return T The retrieved item.
    */
-  template <typename T> T getItem(std::string_view fname);
+  template <typename T> T* getItem(std::string_view fname);
 
   // Destructor
   ~DynamicLibrary() = default;
@@ -112,9 +112,9 @@ public:
    * @param fname The name of the function.
    * @return T The retrieved function.
    */
-  template <typename T> T getFunction(std::string_view fname) {
+  template <typename T> T* getFunction(std::string_view fname) {
     void *symbol = dlsym(handle, std::string(fname).c_str());
-    T f = static_cast<T>(symbol);
+    T* f = static_cast<T*>(symbol);
     return f;
   }
 
@@ -157,9 +157,9 @@ public:
    * @param fname The name of the function.
    * @return T The retrieved function.
    */
-  template <typename T> T getFunction(std::string_view fname) {
+  template <typename T> T* getFunction(std::string_view fname) {
     FARPROC symbol = GetProcAddress(handle, fname.data());
-    return reinterpret_cast<T>(symbol);
+    return reinterpret_cast<T*>(symbol);
   }
 
   // Destructor
@@ -178,39 +178,34 @@ private:
 // Implementation of getModule for DynamicLibrary class
 template <typename ModuleType>
 ModuleType DynamicLibrary::getModule(std::shared_ptr<DynamicLibrary> lib_handle,
-                                     ModuleType *_def,
+                                     ModuleType* _def,
                                      std::string_view modulename) {
-  ModuleType _mod;
-  // Check if the lib is correclty openned
   if (!lib_handle) {
-    // if not
     if (!_def) {
-      // If no default module is provided
-      throw std::runtime_error(
-          "Library is not loaded correctly and no default one is provided");
+      throw std::runtime_error("Library is not loaded correctly and no default one is provided");
     }
-    _mod = *_def; // Else we get the default instead of the
-  } else {
-    auto sym = lib_handle->getItem<ModuleType *>(modulename);
-    if (!sym) {
-      if (!_def) {
-        throw std::runtime_error(
-            "Cannot find required symbol and no default one is provided");
-      } else {
-        _mod = *_def; // IF the lib is opened but we can find the wanted symbol
-                      // we use the defaul;t
-        std::cerr << "Symbol not found, using default implementation"
-                  << std::endl;
-      }
-    } else {
-      _mod = *sym;
-    }
+    std::cerr << "Library not loaded, using default module" << std::endl;
+    return *_def; // Return default module
   }
-  return _mod;
+
+  auto sym = lib_handle->getItem<ModuleType>(modulename);
+
+
+  if (sym) {
+    return *sym; // Return the module found in the library
+  }
+
+  // Handle case where symbol is not found
+  if (!_def) {
+    throw std::runtime_error("Cannot find required symbol and no default one is provided");
+  }
+
+  std::cerr << "Symbol not found, using default implementation" << std::endl;
+  return *_def; // Return default module if symbol is not found
 }
 
 // Implementation of getItem for DynamicLibrary class
-template <typename T> T DynamicLibrary::getItem(std::string_view fname) {
+template <typename T> T* DynamicLibrary::getItem(std::string_view fname) {
   if (!_impl) {
     throw std::runtime_error("DynamicLibrary is not initialized properly");
   }
