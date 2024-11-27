@@ -16,15 +16,23 @@ template <typename Func> using FuncPtr = Func *;
 
 // Macro to define a type alias for a function pointer.
 #define USING_TYPE(func) using func##_ptr = FuncPtr<decltype(func)>;
-#define EXPORT_MODULE(__name__) __attribute__((visibility("default"))) Module __name__
+#define EXPORT_MODULE(__name__)                                                \
+  __attribute__((visibility("default"))) Module __name__
 // Macro to define a pointer to a module item (function or variable).
 #define MODULE_ITEM(name) name##_ptr _##name##_m = nullptr;
 
+#define DECLARE_DELETER                                                        \
+  void _delete_udf(impl **pimpl) {                                             \
+    if (pimpl != nullptr) {                                                    \
+      delete *pimpl;                                                           \
+      *pimpl = nullptr;                                                        \
+    }                                                                          \
+  }
+
 // Macro to define a module structure containing provided items.
-#define DEFINE_MODULE(...) typedef struct Module {\
-  __VA_ARGS__ \
-} *ImportedModule;
-
-
+#define DEFINE_MODULE(...)                                                     \
+  typedef struct Module {                                                      \
+    __VA_ARGS__                                                                \
+  } *ImportedModule;
 
 #endif

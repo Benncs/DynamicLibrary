@@ -12,16 +12,12 @@ void _init_udf(impl &pimpl, int a) {
 
 void _make_udf(Model &model) {
   model.pimpl = new impl;
-  model.pimpl->a = 56;
+  model.pimpl->a = 11272024;
 }
 
-void _delete_udf(impl **pimpl) {
-  if (pimpl != nullptr) {
-    delete *pimpl;
-    *pimpl = nullptr;
-  }
-}
+// This macro can be used for trivial desctruction
+// This declare de _delete_udf function
+DECLARE_DELETER
 
-// Don't forget to export the module.
-__attribute__((visibility("default"))) Module module = {&_init_udf, &_make_udf,
-                                                        &_delete_udf};
+// Don't forget to export the module (and deleter).
+EXPORT_MODULE(module) = {&_init_udf, &_make_udf, &_delete_udf};
