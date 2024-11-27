@@ -5,7 +5,7 @@
 #include <string_view>
 #include "loader.hpp"
 
-#define LOAD_LIB(name) auto _ = UsafeUDF::init_lib(name);
+#define LOAD_LIB(name) auto _ = UnsafeUDF::init_lib(name);
 
 int exec() {
 

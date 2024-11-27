@@ -5,7 +5,7 @@
 
 #include <dynlib/dynlib.hpp>
 
-namespace UsafeUDF {
+namespace UnsafeUDF {
     [[nodiscard]] std::shared_ptr<DynamicLibrary> init_lib(std::string_view path);
 }
 

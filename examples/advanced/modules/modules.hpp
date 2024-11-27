@@ -5,30 +5,22 @@
 struct impl;
 struct Model;
 
-namespace UsafeUDF {
+namespace UnsafeUDF {
 extern void (*make_udf)(Model &);
 extern void (*init_udf)(impl &, int);
 extern void (*delete_udf)(impl **);
 } // namespace UsafeUDF
 
 struct Model {
-  Model() { UsafeUDF::make_udf(*this); }
-  void init(int a) {
-    if (pimpl != nullptr) {
-      return UsafeUDF::init_udf(*pimpl, a);
-    }
-  }
-  ~Model() {
-    if (pimpl != nullptr) {
-      UsafeUDF::delete_udf(&pimpl);
-    }
-  }
+  Model() ;
+  void init(int a);
+  ~Model() ;
   impl *pimpl = nullptr;
 };
 
-using init_udf_ptr = decltype(UsafeUDF::init_udf);
-using make_udf_ptr = decltype(UsafeUDF::make_udf);
-using delete_udf_ptr = decltype(UsafeUDF::delete_udf);
+using init_udf_ptr = decltype(UnsafeUDF::init_udf);
+using make_udf_ptr = decltype(UnsafeUDF::make_udf);
+using delete_udf_ptr = decltype(UnsafeUDF::delete_udf);
 
 DEFINE_MODULE(MODULE_ITEM(init_udf) MODULE_ITEM(make_udf)
                   MODULE_ITEM(delete_udf))
