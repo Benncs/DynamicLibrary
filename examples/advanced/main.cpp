@@ -3,18 +3,7 @@
 #include <exception>
 #include <stdexcept>
 #include <string_view>
-
-namespace UsafeUDF {
-[[nodiscard]] auto init_lib(std::string_view path) {
-  auto _handle = DynamicLibrary::getLib(path);
-  Module _mod = DynamicLibrary::getModule<Module>(_handle);
-  make_udf = _mod._make_udf_m;
-  init_udf = _mod._init_udf_m;
-  delete_udf = _mod._delete_udf_m;
-  return _handle;
-}
-
-} // namespace UsafeUDF
+#include "loader.hpp"
 
 #define LOAD_LIB(name) auto _ = UsafeUDF::init_lib(name);
 

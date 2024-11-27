@@ -6,9 +6,9 @@ struct impl;
 struct Model;
 
 namespace UsafeUDF {
-static void (*make_udf)(Model &) = nullptr;
-static void (*init_udf)(impl &, int) = nullptr;
-static void (*delete_udf)(impl **) = nullptr;
+extern void (*make_udf)(Model &);
+extern void (*init_udf)(impl &, int);
+extern void (*delete_udf)(impl **);
 } // namespace UsafeUDF
 
 struct Model {
