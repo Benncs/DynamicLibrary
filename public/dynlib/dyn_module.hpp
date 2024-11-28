@@ -14,8 +14,15 @@ template <typename Func> using FuncPtr = Func *;
       *pimpl = nullptr;                                                        \
     }                                                                          \
   }
-#define _EXPOSE_CST_SYMBOL_FROM_SO                                             \
+
+#if defined(WIN32) || defined(WIN64)
+  #define _EXPOSE_CST_SYMBOL_FROM_SO                                             \
+  extern const __declspec(dllexport)
+#else
+  #define _EXPOSE_CST_SYMBOL_FROM_SO                                             \
   extern const __attribute__((visibility("default")))
+#endif 
+
 
 #define EXPORT_MODULE(__name__, ...)                                           \
   _EXPOSE_CST_SYMBOL_FROM_SO Module __name__ = {__VA_ARGS__}
