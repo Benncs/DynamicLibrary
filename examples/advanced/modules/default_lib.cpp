@@ -19,8 +19,9 @@ static void _delete_udf(impl **pimpl) {
 
 
 #ifdef DEFAULT_MODULE
-Module default_module = {&_init_udf, &_make_udf,
-                         &_delete_udf};
+EXPORT_MODULE(default_module,&_init_udf, &_make_udf,
+                         &_delete_udf);
 #else
-static Module module = {&init_udf, &make_udf, &delete_udf};
+EXPORT_MODULE(module,&_init_udf, &_make_udf,
+                         &_delete_udf);
 #endif

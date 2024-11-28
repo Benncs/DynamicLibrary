@@ -1,33 +1,35 @@
 #ifndef __DYN_MODULE_HPP__
 #define __DYN_MODULE_HPP__
 
-#ifdef DEFAULT_MODULE
-// If DEFAULT_MODULE is defined, EXPORT is defined as 'extern'.
-#define EXPORT extern
-#define EXPORT_DEFAULT EXPORT Module default_module;
-#else
-// If DEFAULT_MODULE is not defined, EXPORT is defined as 'extern "C"'.
-#define EXPORT extern "C"
-#define EXPORT_DEFAULT
-#endif
-
 // Template alias for function pointers.
 template <typename Func> using FuncPtr = Func *;
 
 // Macro to define a type alias for a function pointer.
 #define USING_TYPE(func) using func##_ptr = FuncPtr<decltype(func)>;
-#define EXPORT_MODULE(__name__)                                                \
-  __attribute__((visibility("default"))) Module __name__
-// Macro to define a pointer to a module item (function or variable).
-#define MODULE_ITEM(name) name##_ptr _##name##_m = nullptr;
 
-#define DECLARE_DELETER                                                        \
-  void _delete_udf(impl **pimpl) {                                             \
+#define DECLARE_DELETER(__typename__)                                          \
+  void _delete_udf(__typename__ **pimpl) {                                     \
     if (pimpl != nullptr) {                                                    \
-      delete *pimpl;                                                           \
+      delete *pimpl; /*NOLINT*/                                                \
       *pimpl = nullptr;                                                        \
     }                                                                          \
   }
+#define _EXPOSE_CST_SYMBOL_FROM_SO                                             \
+  extern const __attribute__((visibility("default")))
+
+#define EXPORT_MODULE(__name__, ...)                                           \
+  _EXPOSE_CST_SYMBOL_FROM_SO Module __name__ = {__VA_ARGS__}
+
+// Macro to define a pointer to a module item (function or variable).
+#define MODULE_ITEM(name) name##_ptr _##name##_m = nullptr;
+
+#ifdef DEFAULT_MODULE
+#define EXPORT_DEFAULT _EXPOSE_CST_SYMBOL_FROM_SO Module default_module;
+#else
+#define EXPORT_DEFAULT
+#endif
+
+#define DECLARE_MODULE(__name__) _EXPOSE_CST_SYMBOL_FROM_SO Module __name__
 
 // Macro to define a module structure containing provided items.
 #define DEFINE_MODULE(...)                                                     \

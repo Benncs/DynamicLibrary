@@ -17,7 +17,7 @@ void _make_udf(Model &model) {
 
 // This macro can be used for trivial desctruction
 // This declare de _delete_udf function
-DECLARE_DELETER
+DECLARE_DELETER(impl)
 
 // Don't forget to export the module (and deleter).
-EXPORT_MODULE(module) = {&_init_udf, &_make_udf, &_delete_udf};
+EXPORT_MODULE(module,&_init_udf, &_make_udf, &_delete_udf);
