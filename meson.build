@@ -5,8 +5,10 @@ project(
   default_options: ['warning_level=3', 'cpp_std=gnu++20'],
 )
 
-shared_include = include_directories('../public')
+shared_include = include_directories('./public')
 
 dynlib_dep = declare_dependency(include_directories: shared_include)
 
+if get_option('build_examples')
 subdir('examples')
+endif
