@@ -1,10 +1,12 @@
 /**
  * @file dynlib.hpp
- * @brief Defines the DynamicLibrary class for loading and accessing symbols from dynamic libraries.
+ * @brief Defines the DynamicLibrary class for loading and accessing symbols
+ * from dynamic libraries.
  *
- * This file provides the declaration of the DynamicLibrary class, which encapsulates functionality
- * for loading dynamic libraries and retrieving symbols from them. It also includes necessary headers
- * and type definitions required for the class implementation.
+ * This file provides the declaration of the DynamicLibrary class, which
+ * encapsulates functionality for loading dynamic libraries and retrieving
+ * symbols from them. It also includes necessary headers and type definitions
+ * required for the class implementation.
  *
  * @author CASALE Benjamin
  * @date 08/03/2024
@@ -13,6 +15,7 @@
 #ifndef __DYNLIB_HPP__
 #define __DYNLIB_HPP__
 
+#include <exception>
 #include <iostream>
 #include <memory>
 #include <string_view>
@@ -26,36 +29,39 @@ class DynamicLibrary {
 public:
   /**
    * @brief Retrieves an item from the dynamic library by its name.
-   * 
+   *
    * @tparam T The type of the item to retrieve.
    * @param fname The name of the item.
    * @return T The retrieved item.
    */
-  template <typename T>
-  T getItem(std::string_view fname);
+  template <typename T> T* getItem(std::string_view fname);
 
   // Destructor
   ~DynamicLibrary() = default;
+  DynamicLibrary(DynamicLibrary&&) = delete;
+  DynamicLibrary(const DynamicLibrary&) = delete;
+  DynamicLibrary& operator=(const DynamicLibrary&)=delete;
+  DynamicLibrary& operator=(DynamicLibrary&&)=delete;
 
   /**
    * @brief Retrieves a dynamic library object given its path.
-   * 
+   *
    * @param path The path to the dynamic library.
-   * @return std::shared_ptr<DynamicLibrary> A shared pointer to the dynamic library object.
+   * @return std::shared_ptr<DynamicLibrary> A shared pointer to the dynamic
+   * library object.
    */
   static std::shared_ptr<DynamicLibrary> getLib(std::string_view path) {
     try {
-      auto lib = new DynamicLibrary(path);
+      auto *lib = new DynamicLibrary(path);
       return std::shared_ptr<DynamicLibrary>(lib);
     } catch (std::exception &e) {
-      std::cout<<e.what()<<std::endl;
       return nullptr;
     }
   }
 
   /**
    * @brief Retrieves a module from the dynamic library.
-   * 
+   *
    * @tparam ModuleType The type of the module to retrieve.
    * @param lib_handle A shared pointer to the dynamic library.
    * @param _def Default value of the module if not found.
@@ -70,10 +76,10 @@ public:
 private:
   /**
    * @brief Private constructor for DynamicLibrary.
-   * 
+   *
    * @param path The path to the dynamic library.
    */
-  DynamicLibrary(std::string_view path) {
+  explicit DynamicLibrary(std::string_view path) {
     this->_impl = std::make_unique<Impl>(path);
   }
 
@@ -84,8 +90,7 @@ private:
   std::unique_ptr<Impl> _impl;
 };
 
-
-///LINUX IMPLEMENTATION 
+/// LINUX IMPLEMENTATION
 #if defined(__linux__)
 
 #include <dlfcn.h>
@@ -94,34 +99,33 @@ class DynamicLibrary::Impl {
 public:
   /**
    * @brief Constructs the implementation object for the dynamic library.
-   * 
+   *
    * @param path The path to the dynamic library.
    */
-  Impl(std::string_view path) {
+  explicit Impl(std::string_view path) {
     this->handle = dlopen(std::string(path).c_str(), RTLD_NOW);
 
-    if (!handle) {
+    if (handle == nullptr) {
       throw std::runtime_error("Library cannot be loaded");
     }
   }
 
   /**
    * @brief Retrieves a function from the dynamic library by its name.
-   * 
+   *
    * @tparam T The type of the function to retrieve.
    * @param fname The name of the function.
    * @return T The retrieved function.
    */
-  template <typename T>
-  T getFunction(std::string_view fname) {
+  template <typename T> T* getFunction(std::string_view fname) {
     void *symbol = dlsym(handle, std::string(fname).c_str());
-    T f = static_cast<T>(symbol);
+    T* f = static_cast<T*>(symbol);
     return f;
   }
 
   // Destructor
   ~Impl() {
-    if (handle) {
+    if (handle != nullptr) {
       dlclose(handle);
     }
     handle = nullptr;
@@ -133,7 +137,6 @@ private:
 
 #endif
 
-
 #if defined(WIN32) || defined(WIN64)
 #include <windows.h>
 
@@ -141,7 +144,7 @@ class DynamicLibrary::Impl {
 public:
   /**
    * @brief Constructs the implementation object for the dynamic library.
-   * 
+   *
    * @param path The path to the dynamic library.
    */
   Impl(std::string_view path) {
@@ -154,15 +157,14 @@ public:
 
   /**
    * @brief Retrieves a function from the dynamic library by its name.
-   * 
+   *
    * @tparam T The type of the function to retrieve.
    * @param fname The name of the function.
    * @return T The retrieved function.
    */
-  template <typename T>
-  T getFunction(std::string_view fname) {
+  template <typename T> T* getFunction(std::string_view fname) {
     FARPROC symbol = GetProcAddress(handle, fname.data());
-    return reinterpret_cast<T>(symbol);
+    return reinterpret_cast<T*>(symbol);
   }
 
   // Destructor
@@ -178,44 +180,37 @@ private:
 };
 #endif
 
-
 // Implementation of getModule for DynamicLibrary class
 template <typename ModuleType>
 ModuleType DynamicLibrary::getModule(std::shared_ptr<DynamicLibrary> lib_handle,
-                                     ModuleType *_def,
+                                     ModuleType* _def,
                                      std::string_view modulename) {
-  ModuleType _mod;
-  //Check if the lib is correclty openned  
   if (!lib_handle) {
-    // if not 
     if (!_def) {
-      // If no default module is provided 
-      throw std::runtime_error(
-          "Library is not loaded correctly and no default one is provided");
+      throw std::runtime_error("Library is not loaded correctly and no default one is provided");
     }
-    _mod = *_def; // Else we get the default instead of the
-  } 
-  else 
-  {
-    auto sym = lib_handle->getItem<ModuleType *>(modulename);
-    if (!sym) {
-      if (!_def) {
-        throw std::runtime_error(
-            "Cannot find required symbol and no default one is provided");
-      } else {
-        _mod = *_def; // IF the lib is opened but we can find the wanted symbol we use the defaul;t 
-        std::cerr<<"Symbol not found, using default implementation"<<std::endl;
-      }
-    } else {
-      _mod = *sym;
-    }
+    std::cerr << "Library not loaded, using default module" << std::endl;
+    return *_def; // Return default module
   }
-  return _mod;
+
+  auto sym = lib_handle->getItem<ModuleType>(modulename);
+
+
+  if (sym) {
+    return *sym; // Return the module found in the library
+  }
+
+  // Handle case where symbol is not found
+  if (!_def) {
+    throw std::runtime_error("Cannot find required symbol and no default one is provided");
+  }
+
+  std::cerr << "Symbol not found, using default implementation" << std::endl;
+  return *_def; // Return default module if symbol is not found
 }
 
 // Implementation of getItem for DynamicLibrary class
-template <typename T> 
-T DynamicLibrary::getItem(std::string_view fname) {
+template <typename T> T* DynamicLibrary::getItem(std::string_view fname) {
   if (!_impl) {
     throw std::runtime_error("DynamicLibrary is not initialized properly");
   }

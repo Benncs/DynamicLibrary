@@ -41,4 +41,5 @@ jobs:
           make
           make external_module
           cd build
-          ./main
+          ./main external_module.so
+

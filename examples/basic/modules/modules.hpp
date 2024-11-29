@@ -1,7 +1,7 @@
 #ifndef __MYMODULE_HPP__
 #define __MYMODULE_HPP__
 
-#include "../../lib/dyn_module.hpp"
+#include <dynlib/dyn_module.hpp>
 
 using foo_ptr = int (*)(int, int);
 using bar_ptr = int (*)(int);
