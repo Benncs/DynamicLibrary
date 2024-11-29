@@ -15,6 +15,7 @@
 #ifndef __DYNLIB_HPP__
 #define __DYNLIB_HPP__
 
+#include <exception>
 #include <iostream>
 #include <memory>
 #include <string_view>
@@ -37,6 +38,10 @@ public:
 
   // Destructor
   ~DynamicLibrary() = default;
+  DynamicLibrary(DynamicLibrary&&) = delete;
+  DynamicLibrary(const DynamicLibrary&) = delete;
+  DynamicLibrary& operator=(const DynamicLibrary&)=delete;
+  DynamicLibrary& operator=(DynamicLibrary&&)=delete;
 
   /**
    * @brief Retrieves a dynamic library object given its path.
@@ -47,7 +52,7 @@ public:
    */
   static std::shared_ptr<DynamicLibrary> getLib(std::string_view path) {
     try {
-      auto lib = new DynamicLibrary(path);
+      auto *lib = new DynamicLibrary(path);
       return std::shared_ptr<DynamicLibrary>(lib);
     } catch (std::exception &e) {
       return nullptr;
@@ -74,7 +79,7 @@ private:
    *
    * @param path The path to the dynamic library.
    */
-  DynamicLibrary(std::string_view path) {
+  explicit DynamicLibrary(std::string_view path) {
     this->_impl = std::make_unique<Impl>(path);
   }
 
@@ -97,10 +102,10 @@ public:
    *
    * @param path The path to the dynamic library.
    */
-  Impl(std::string_view path) {
+  explicit Impl(std::string_view path) {
     this->handle = dlopen(std::string(path).c_str(), RTLD_NOW);
 
-    if (!handle) {
+    if (handle == nullptr) {
       throw std::runtime_error("Library cannot be loaded");
     }
   }
@@ -120,7 +125,7 @@ public:
 
   // Destructor
   ~Impl() {
-    if (handle) {
+    if (handle != nullptr) {
       dlclose(handle);
     }
     handle = nullptr;
