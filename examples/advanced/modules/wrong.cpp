@@ -2,21 +2,26 @@
 #include "modules.hpp"
 #include <iostream>
 
-struct impl {
+struct impl
+{
   int a;
 };
 
-void _init_udf(impl &pimpl, int a) {
+void _init_udf(impl& pimpl, int a)
+{
   std::cout << "A=" << pimpl.a << std::endl;
 }
 
-void _make_udf(Model &model) {
+void _make_udf(Model& model)
+{
   model.pimpl = new impl;
   model.pimpl->a = 56;
 }
 
-void _delete_udf(impl **pimpl) {
-  if (pimpl != nullptr) {
+void _delete_udf(impl** pimpl)
+{
+  if (pimpl != nullptr)
+  {
     delete *pimpl;
     *pimpl = nullptr;
   }
