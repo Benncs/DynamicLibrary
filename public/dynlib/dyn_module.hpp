@@ -16,16 +16,17 @@ template <typename Func> using FuncPtr = Func *;
   }
 
 #if defined(WIN32) || defined(WIN64)
-  #define _EXPOSE_CST_SYMBOL_FROM_SO                                             \
-  extern const __declspec(dllexport)
+#define _EXPOSE_CST_SYMBOL_FROM_SO extern const __declspec(dllexport)
 #else
-  #define _EXPOSE_CST_SYMBOL_FROM_SO                                             \
+#define _EXPOSE_CST_SYMBOL_FROM_SO                                             \
   extern const __attribute__((visibility("default")))
-#endif 
+#endif
 
+#define EXPORT_MODULE_WITH_TAG(__name__, __tag__, ...)                         \
+  _EXPOSE_CST_SYMBOL_FROM_SO Module __name__ = {__VA_ARGS__, __tag__};
 
 #define EXPORT_MODULE(__name__, ...)                                           \
-  _EXPOSE_CST_SYMBOL_FROM_SO Module __name__ = {__VA_ARGS__}
+  EXPORT_MODULE_WITH_TAG(__name__, , __VA_ARGS__)
 
 // Macro to define a pointer to a module item (function or variable).
 #define MODULE_ITEM(name) name##_ptr _##name##_m = nullptr;
@@ -36,12 +37,13 @@ template <typename Func> using FuncPtr = Func *;
 #define EXPORT_DEFAULT
 #endif
 
-#define DECLARE_MODULE(__name__) _EXPOSE_CST_SYMBOL_FROM_SO Module __name__
+#define DECLARE_MODULE(__name__) _EXPOSE_CST_SYMBOL_FROM_SO Module __name__;
 
 // Macro to define a module structure containing provided items.
 #define DEFINE_MODULE(...)                                                     \
   typedef struct Module {                                                      \
     __VA_ARGS__                                                                \
+    long long build_tag = 0;                                                   \
   } *ImportedModule;
 
 #endif

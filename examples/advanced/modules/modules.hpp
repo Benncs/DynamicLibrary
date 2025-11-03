@@ -5,17 +5,19 @@
 struct impl;
 struct Model;
 
-namespace UnsafeUDF {
-extern void (*make_udf)(Model &);
-extern void (*init_udf)(impl &, int);
-extern void (*delete_udf)(impl **);
-} // namespace UsafeUDF
+namespace UnsafeUDF
+{
+  extern void (*make_udf)(Model&);
+  extern void (*init_udf)(impl&, int);
+  extern void (*delete_udf)(impl**);
+} // namespace UnsafeUDF
 
-struct Model {
-  Model() ;
+struct Model
+{
+  Model();
   void init(int a);
-  ~Model() ;
-  impl *pimpl = nullptr;
+  ~Model();
+  impl* pimpl = nullptr;
 };
 
 using init_udf_ptr = decltype(UnsafeUDF::init_udf);
@@ -26,6 +28,5 @@ DEFINE_MODULE(MODULE_ITEM(init_udf) MODULE_ITEM(make_udf)
                   MODULE_ITEM(delete_udf))
 
 EXPORT_DEFAULT
-
 
 #endif

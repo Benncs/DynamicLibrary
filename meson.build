@@ -1,7 +1,7 @@
 project(
   'dynamic-library',
   'cpp',
-  version: '1.0',
+  version: '1.1',
   default_options: ['warning_level=3', 'cpp_std=gnu++20'],
 )
 compiler = meson.get_compiler('cpp')

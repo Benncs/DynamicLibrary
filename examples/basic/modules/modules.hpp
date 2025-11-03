@@ -6,12 +6,8 @@
 using foo_ptr = int (*)(int, int);
 using bar_ptr = int (*)(int);
 
+DEFINE_MODULE(MODULE_ITEM(foo) MODULE_ITEM(bar))
 
-DEFINE_MODULE(
-  MODULE_ITEM(foo)
-  MODULE_ITEM(bar)
-)
-
-EXPORT_DEFAULT 
+EXPORT_DEFAULT
 
 #endif
